@@ -19,47 +19,50 @@ class RollsBarChart extends StatelessWidget {
       animate: false,
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return new charts.BarChart(
       seriesList,
       animate: animate,
+      barRendererDecorator: new charts.BarLabelDecorator<String>(),
+      domainAxis: new charts.OrdinalAxisSpec(
+          // Make sure that we draw the domain axis line.
+          showAxisLine: true,
+          // But don't draw anything else.
+          renderSpec: new charts.NoneRenderSpec()),
     );
   }
 
   /// Create one series with sample hard coded data.
-  static List<charts.Series<OrdinalRolls, String>> _createData(List<int> rolls, ColorModel colorModel) {
-
-    List<int> domain = List.filled(colorModel.length+1, 0); // enables us to count from 1
-    for(int i = 0; i < rolls.length; i++) {
-      assert (rolls[i] <= domain.length);
+  static List<charts.Series<OrdinalRolls, String>> _createData(
+      List<int> rolls, ColorModel colorModel) {
+    List<int> domain =
+        List.filled(colorModel.length + 1, 0); // enables us to count from 1
+    for (int i = 0; i < rolls.length; i++) {
+      assert(rolls[i] <= domain.length);
       domain[rolls[i]]++;
     }
-
     final List<OrdinalRolls> ordinalRolls = List<OrdinalRolls>();
-    for(int i = 1; i < rolls.length; i++) {
-      ordinalRolls.add(OrdinalRolls(i, rolls[i], colorModel.getColor(i)));
+    for (int i = 1; i < domain.length; i++) {
+      ordinalRolls.add(OrdinalRolls(i, domain[i], colorModel.getColor(i)));
     }
-
     return [
       new charts.Series<OrdinalRolls, String>(
-        id: 'Control Rolls',
-        fillColorFn: (index, __) {
-          var color = index.myColor;
+          id: 'Control Rolls',
+          fillColorFn: (index, __) {
+            var color = index.myColor;
             return charts.Color(
-                r: color.red,
-                g: color.green,
-                b: color.blue,
-                a: color.alpha);
+                r: color.red, g: color.green, b: color.blue, a: color.alpha);
           },
-        colorFn: (index, __) {
-          return charts.MaterialPalette.blue.shadeDefault;
-        },
-        domainFn: (OrdinalRolls rolls, _) => rolls.amount.toString(),
-        measureFn: (OrdinalRolls rolls, _) => rolls.amount,
-        data: ordinalRolls,
-      )
+          colorFn: (index, __) {
+            return charts.MaterialPalette.blue.shadeDefault;
+          },
+          domainFn: (OrdinalRolls rolls, _) => rolls.rollNumber.toString(),
+          measureFn: (OrdinalRolls rolls, _) => rolls.amount,
+          data: ordinalRolls,
+          labelAccessorFn: (OrdinalRolls rolls, _) =>
+              '${rolls.amount.toString()}')
     ];
   }
 }

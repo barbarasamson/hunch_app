@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:hunch_app/models/colors.dart';
 import 'package:hunch_app/models/significance.dart';
+import 'package:hunch_app/models/globals.dart';
 import 'package:vibration/vibration.dart';
 
 
@@ -12,7 +13,7 @@ import 'dart:math';
 
 import 'package:provider/provider.dart';
 
-ColorModel colorModel = ColorModel(4);
+Global global = Global();
 bool _guessTrue = true;
 int rolled = 0;
 //double _score = 0.0;
@@ -20,9 +21,6 @@ int _intScore = 0;
 double _raw_score = 0.0;
 String sig_text = "";
 //double _c2_score = 0.0;
-List<int> guesses = [];
-List<int> rolls = [];
-List<bool> guessRights = [];
 HashMap<int, AnimationController> controllers = HashMap();
 Significance sig = Significance();
 bool canVibrate;
@@ -54,9 +52,9 @@ class Roller extends ChangeNotifier {
     int seed = now.millisecondsSinceEpoch;
     Random random = Random(seed);
     rolled = random.nextInt(GuessButton.numButtons) + 1;
-    guesses.add(guess);
-    rolls.add(rolled);
-    guessRights.add(_guessTrue);
+    global.guesses.add(guess);
+    global.rolls.add(rolled);
+    global.guessRights.add(_guessTrue);
     if (rolled == guess) {
       _raw_score++;
     }
@@ -80,8 +78,8 @@ class Roller extends ChangeNotifier {
     rolled = 0;
     _intScore = 0;
     _raw_score = 0;
-    guesses.clear();
-    rolls.clear();
+    global.guesses.clear();
+    global.rolls.clear();
     controllers.clear();
     notifyListeners();
   }
@@ -106,12 +104,13 @@ class _PlayScreenState extends State<PlayScreen> {
     // Causes the app to rebuild with the new _selectedChoice.
     setState(() {
       _selectedChoice = choice;
-      colorModel = ColorModel(choice.numGuessBoxes);
+      global.colorModel = ColorModel(choice.numGuessBoxes);
       _roller.clear();
     });
   }
 
   void _onItemTapped(int index) {
+
     switch(index) {
       case 0:
         Navigator.pushNamed(context, '/settings');
@@ -228,16 +227,16 @@ class ResultState extends State {
       GridTile tile(int rollOrGuess) {
         return GridTile(
           child: Container(
-              width: 1, height: 1, color: colorModel?.getColor(rollOrGuess)),
+              width: 1, height: 1, color: global.colorModel?.getColor(rollOrGuess)),
         );
       }
 
       List<Widget> results = [];
-      if (rolls.isEmpty) results.add(tile(0));
-      assert(rolls.length == guesses.length);
-      for (int i = 0; i < rolls.length; i++) {
-        results.insert(0, tile(guesses[i]));
-        results.insert(0, tile(rolls[i]));
+      if (global.rolls.isEmpty) results.add(tile(0));
+      assert(global.rolls.length == global.guesses.length);
+      for (int i = 0; i < global.rolls.length; i++) {
+        results.insert(0, tile(global.guesses[i]));
+        results.insert(0, tile(global.rolls[i]));
       }
       return results;
     }
@@ -316,7 +315,7 @@ class GuessButton extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return GuessButtonState(
-        myNumber, colorModel.getColor(myNumber), colorModel.getFrame(myNumber));
+        myNumber, global.colorModel.getColor(myNumber), global.colorModel.getFrame(myNumber));
   }
 }
 
